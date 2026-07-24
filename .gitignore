@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Ambientes virtuais
+.venv/
+venv/
+env/
+
+# Segredos e configuração local
+.env
+.env.*
+*.local
+
+# Dados baixados e cache
+dados/
+*.csv
+*.parquet
+
+# Ferramentas de IA e editores
+.claude/
+CLAUDE.md
+.cursor/
+.idea/
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db
