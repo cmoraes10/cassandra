@@ -102,6 +102,3 @@ This is a study project built to explore Monte Carlo simulation, Markov chains,
 and strategy testing. Nothing here is investment advice. Markets involve risk
 and past performance does not guarantee future results.
 
-## Author
-
-Built by Cauã Moraes. Other projects at [mowaveone.com](https://mowaveone.com).
