@@ -1,9 +1,9 @@
 """
-Ferramentas compartilhadas pelos testes.
+Shared test fixtures.
 
-Os testes não acessam a internet. Em vez de baixar preços de verdade, a gente
-gera uma série sintética com tendência e ruído controlados, o que deixa os
-testes rápidos e previsíveis.
+Tests do not access the network. Instead of fetching real prices, they use
+synthetic series with controlled trend and noise, which keeps tests fast and
+deterministic.
 """
 
 import numpy as np
@@ -11,23 +11,22 @@ import pandas as pd
 import pytest
 
 
-def serie_sintetica(n_dias=600, deriva=0.0005, volatilidade=0.02, semente=7, preco_inicial=100.0):
-    """Cria uma série de preços simulando um passeio aleatório com tendência."""
-    rng = np.random.default_rng(semente)
-    retornos = rng.normal(deriva, volatilidade, n_dias)
-    precos = preco_inicial * np.exp(np.cumsum(retornos))
-    datas = pd.date_range("2020-01-01", periods=n_dias, freq="B")
-    serie = pd.Series(precos, index=datas, name="TESTE")
-    return serie
+def synthetic_series(n_days=600, drift=0.0005, volatility=0.02, seed=7, initial_price=100.0):
+    """Creates a price series simulating a random walk with trend."""
+    rng = np.random.default_rng(seed)
+    returns = rng.normal(drift, volatility, n_days)
+    prices = initial_price * np.exp(np.cumsum(returns))
+    dates = pd.date_range("2020-01-01", periods=n_days, freq="B")
+    return pd.Series(prices, index=dates, name="TEST")
 
 
 @pytest.fixture
-def precos_alta():
-    """Série com tendência de alta forte o bastante para dominar o ruído."""
-    return serie_sintetica(deriva=0.003, volatilidade=0.010)
+def prices_bull():
+    """Series with a strong enough upward trend to dominate noise."""
+    return synthetic_series(drift=0.003, volatility=0.010)
 
 
 @pytest.fixture
-def precos_baixa():
-    """Série com tendência de baixa forte o bastante para dominar o ruído."""
-    return serie_sintetica(deriva=-0.003, volatilidade=0.010)
+def prices_bear():
+    """Series with a strong enough downward trend to dominate noise."""
+    return synthetic_series(drift=-0.003, volatility=0.010)

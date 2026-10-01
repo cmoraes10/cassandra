@@ -1,106 +1,107 @@
 # Cassandra
 
-Um sistema que tenta prever para que lado uma ação tende a andar, simulando
-milhares de futuros possíveis e medindo em quantos deles o preço sobe ou cai.
+A system that estimates which way a stock price tends to move by simulating
+thousands of possible futures and measuring in how many of them the price ends
+up higher or lower.
 
-## De onde vem o nome
+## Where the name comes from
 
-Cassandra é uma figura da mitologia grega, uma sacerdotisa que recebeu o dom de
-enxergar o futuro. O nome foi escolhido de propósito. O projeto vive de olhar
-para frente e apontar tendências, só que sem prometer certeza. Assim como a
-Cassandra do mito, ele entrega uma leitura do que provavelmente vem, e cabe a
-quem escuta decidir o que fazer com isso.
+Cassandra is a figure from Greek mythology, a priestess who received the gift
+of seeing the future. The name was chosen deliberately. This project lives by
+looking ahead and pointing to tendencies, but without promising certainty. Like
+the mythological Cassandra, it delivers a reading of what is likely coming, and
+it is up to the listener to decide what to do with that.
 
-## O que ele faz
+## What it does
 
-Você informa um papel, da bolsa brasileira ou da americana, e a Cassandra faz
-três coisas.
+You give it a stock, from the Brazilian or US exchange, and Cassandra does three
+things.
 
-Primeiro ela estuda o histórico recente do preço para entender o comportamento
-daquele ativo. Depois ela projeta milhares de caminhos possíveis para os
-próximos dias. Por fim ela resume tudo num sinal claro, comprar, vender ou ficar
-de fora, acompanhado de uma nota de confiança de zero a cem.
+First it studies the recent price history to understand the behavior of that
+asset. Then it projects thousands of possible paths for the next few days.
+Finally it summarizes everything into a clear signal, buy, sell, or stay out,
+accompanied by a confidence score from zero to a hundred.
 
-Tudo isso aparece num painel web, com o gráfico das trajetórias simuladas e uma
-aba de backtest que testa a estratégia sobre o passado.
+All of this appears in a web dashboard, with the chart of simulated trajectories
+and a backtest tab that tests the strategy against the past.
 
-## Como funciona por dentro
+## How it works internally
 
-A ideia que sustenta o projeto é que o mercado não age sempre do mesmo jeito. Às
-vezes vive um momento de alta, com tendência positiva, e às vezes um momento de
-baixa. A Cassandra separa esses dois regimes a partir do histórico e mede a
-tendência e a volatilidade de cada um.
+The idea behind the project is that the market does not always behave the same
+way. Sometimes it is in a bull run, with positive momentum, and sometimes in a
+bear run. Cassandra separates those two regimes from the price history and
+measures the tendency and volatility of each one.
 
-A troca entre alta e baixa é tratada como uma cadeia de Markov, o que na prática
-quer dizer que o humor de amanhã depende do humor de hoje. Com esses ingredientes
-o motor roda uma simulação de Monte Carlo, gerando milhares de trajetórias de
-preço, dia após dia, cada uma seguindo o regime em que se encontra naquele
-instante.
+The switch between bull and bear is treated as a Markov chain, which in
+practice means that tomorrow's mood depends on today's mood. With those
+ingredients the engine runs a Monte Carlo simulation, generating thousands of
+price trajectories, day by day, each one following the regime it finds itself
+in at that moment.
 
-No fim, a proporção de trajetórias que terminam acima do preço de partida vira a
-probabilidade de alta, e a distância dessa probabilidade em relação ao puro cara
-ou coroa vira a confiança do sinal.
+At the end, the proportion of trajectories that finish above the starting price
+becomes the probability of a rally, and the distance of that probability from a
+pure coin flip becomes the signal's confidence.
 
-## Estrutura
+## Structure
 
 ```
 cassandra/
-  dados.py         busca os preços no yfinance
-  simulacao.py     estima os regimes e roda o Monte Carlo
-  sinal.py         transforma a simulação num sinal de operação
-  risco.py         define o tamanho da posição e os limites de perda e ganho
-  posicao.py       controla o caixa e as operações abertas
-  backtest.py      testa a estratégia sobre o histórico
-  otimizador.py    varre parâmetros em busca da melhor configuração
-painel/
-  app.py           interface web em Streamlit
-tests/             testes automatizados
+  data.py          fetches prices from yfinance
+  simulation.py    estimates regimes and runs Monte Carlo
+  signal.py        turns the simulation into a trade signal
+  risk.py          sets position size and stop/target levels
+  position.py      tracks cash and open positions
+  backtest.py      tests the strategy against historical data
+  optimizer.py     sweeps parameters to find the best configuration
+dashboard/
+  app.py           Streamlit web interface
+tests/             automated tests
 ```
 
-## Como rodar
+## How to run
 
-O projeto foi testado com Python 3.12. Instale as dependências e abra o painel.
+The project was tested with Python 3.12. Install dependencies and open the
+dashboard.
 
 ```bash
 pip install -r requirements.txt
-streamlit run painel/app.py
+streamlit run dashboard/app.py
 ```
 
-Para rodar os testes, instale também as dependências de desenvolvimento.
+To run the tests, also install the development dependencies.
 
 ```bash
 pip install -r requirements-dev.txt
 pytest
 ```
 
-## Como colocar no ar
+## Deploy
 
-O painel roda de graça no Streamlit Community Cloud. Suba o repositório para o
-GitHub, entre em share.streamlit.io, aponte para este repositório e indique
-`painel/app.py` como arquivo principal. As dependências saem do `requirements.txt`
-e o restante é automático.
+The dashboard runs for free on Streamlit Community Cloud. Push the repo to
+GitHub, go to share.streamlit.io, point it at this repository, and set
+`dashboard/app.py` as the main file. Dependencies come from `requirements.txt`
+and the rest is automatic.
 
-## Exemplo rápido pelo código
+## Quick example
 
 ```python
-from cassandra.dados import baixa_precos
-from cassandra.simulacao import estima_modelo, simula
-from cassandra.sinal import gera_sinal
+from cassandra.data import fetch_prices
+from cassandra.simulation import fit_model, simulate
+from cassandra.signal import generate_signal
 
-precos = baixa_precos("PETR4", mercado="B3")
-modelo = estima_modelo(precos)
-resultado = simula(modelo, horizonte=21, n_caminhos=25000)
-sinal = gera_sinal(resultado)
-print(sinal.resumo())
+prices = fetch_prices("PETR4", market="B3")
+model = fit_model(prices)
+result = simulate(model, horizon=21, n_paths=25000)
+signal = generate_signal(result)
+print(signal.summary())
 ```
 
-## Aviso
+## Disclaimer
 
-Este é um projeto de estudo, feito para explorar simulação de Monte Carlo,
-cadeias de Markov e teste de estratégias. Nada aqui é recomendação de
-investimento. Mercado envolve risco e resultado passado não garante resultado
-futuro.
+This is a study project built to explore Monte Carlo simulation, Markov chains,
+and strategy testing. Nothing here is investment advice. Markets involve risk
+and past performance does not guarantee future results.
 
-## Autor
+## Author
 
-Feito por Cauã Moraes. Conheça outros projetos em [mowaveone.com](https://mowaveone.com).
+Built by Cauã Moraes. Other projects at [mowaveone.com](https://mowaveone.com).
